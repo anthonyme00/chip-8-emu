@@ -55,6 +55,7 @@ private:
 	void vxOrVy();
 	void vxAndVy();
 	void vxXorVy();
+
 public:
 	void initialize();
 	void doCycle();

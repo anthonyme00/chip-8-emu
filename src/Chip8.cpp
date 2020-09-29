@@ -2,6 +2,9 @@
 
 /// <summary>
 /// 0x0NNN Machine code subroutine
+/// Presumably shouldn't be the exact same as instruction
+/// 2NNN.
+/// TODO: Research further
 /// </summary>
 void Chip8::call() {
 	stack[sp] = pc; //set current stack to program counter
@@ -46,7 +49,7 @@ void Chip8::subroutine() {
 void Chip8::ifVxNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	if (V[x] == (opcode & 0x00ff)) {
-		pc++;
+		pc += 2;
 	}
 }
 
@@ -56,7 +59,7 @@ void Chip8::ifVxNN() {
 void Chip8::ifVxNotNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	if (V[x] != (opcode & 0x00ff)) {
-		pc++;
+		pc += 2;
 	}
 }
 
@@ -67,7 +70,7 @@ void Chip8::ifVxVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	if (V[x] == V[y]) {
-		pc++;
+		pc += 2;
 	}
 }
 
@@ -78,7 +81,7 @@ void Chip8::ifVxNotVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	if (V[x] != V[y]) {
-		pc++;
+		pc += 2;
 	}
 }
 
@@ -136,6 +139,10 @@ void Chip8::vxXorVy() {
 	V[x] ^= V[y];
 }
 
+/// <summary>
+/// TODO:
+/// Initialize all to it's proper value
+/// </summary>
 void Chip8::initialize() {
 	pc = 0x200; //program resides in memory address starting from 0x200
 	opcode = 0;
@@ -147,5 +154,5 @@ void Chip8::doCycle() {
 	//every opcode is 2 bytes long. stored in big endian
 	unsigned short opcode = memory[pc] << 8 | memory[pc+1];
 
-	pc++;
+	pc += 2; //Increase program counter by 2 since each opcode is 2 bytes long
 }
