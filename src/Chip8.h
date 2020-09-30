@@ -22,7 +22,7 @@ private:
 
 	/// <summary>
 	/// Both of these count down to 0. These are refreshed at a frequency of 60hz
-	/// for sound_timer in particular, it sounds a buzzer when it reaches 0
+	/// for sound_timer in particular, it sounds a buzzer when it is not 0
 	/// </summary>
 	unsigned char delay_timer;
 	unsigned char sound_timer;
@@ -31,16 +31,20 @@ private:
 	unsigned short sp; //Stack pointer
 
 	unsigned char key[16]; //Track current position of key
-	unsigned char clearScreenFlag;
+	unsigned char drawFlag;
+	unsigned char interruptFlag;
 
 	//call
 	void call();
 	//display
 	void disp_clear();
+	void draw();
 	//flow
 	void ret();
 	void go_to();
 	void subroutine();
+
+	void jmpToNNNAddV0();
 	//cond
 	void ifVxNN();
 	void ifVxNotNN();
@@ -56,6 +60,33 @@ private:
 	void vxAndVy();
 	void vxXorVy();
 
+	void vxShiftR();
+	void vxShiftL();
+	//math
+	void vxAddVy();
+	void vxSubVy();
+	void vxToVySubVx();
+	//mem
+	void iToNNN();
+
+	void iAddVx();
+	void iToSprAdd();
+
+	void regDump();
+	void regLoad();
+	//rand
+	void randAndNN();
+	//keyOp
+	void ifKeyEqVx();
+	void ifKeyNotEqVx();
+	void waitKey();
+	//timer
+	void getDelay();
+	void setDelay();
+	//sound
+	void setSoundTimer();
+	//bcd
+	void setBCD();
 public:
 	void initialize();
 	void doCycle();
