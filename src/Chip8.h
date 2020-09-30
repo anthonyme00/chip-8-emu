@@ -87,7 +87,10 @@ private:
 	void setSoundTimer();
 	//bcd
 	void setBCD();
+
+	void* (Chip8BaseInst[16]);
 public:
+	Chip8();
 	void initialize();
 	void doCycle();
 };

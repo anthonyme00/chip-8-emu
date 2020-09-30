@@ -1,6 +1,8 @@
 #include "Chip8.h"
 #include <stdlib.h>
 
+#define FONTSET_OFFSET 0x050
+
 /// <summary>
 /// 0x0NNN Machine code subroutine
 /// Presumably shouldn't be the exact same as instruction
@@ -17,7 +19,10 @@ void Chip8::call() {
 /// 00E0
 /// </summary>
 void Chip8::disp_clear() {
-	//clearScreenFlag = 1;
+	for (int i = 0; i < 64 * 32; i++) {
+		graphic[i] = 0;
+	}
+	drawFlag = 1;
 }
 
 /// <summary>
@@ -310,9 +315,8 @@ void Chip8::iAddVx() {
 void Chip8::iToSprAdd() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	//each character requires 5 bytes of data. stored from 0x050
-	I = 0x050 + 5 * V[x];
+	I = FONTSET_OFFSET + 5 * V[x];
 }
-
 
 /// <summary>
 /// FX33
@@ -347,6 +351,11 @@ void Chip8::regLoad() {
 	}
 }
 
+Chip8::Chip8()
+{
+	//TODO: Route instruction through their proper channel using function pointer array
+}
+
 /// <summary>
 /// TODO:
 /// Initialize all to it's proper value
@@ -356,6 +365,54 @@ void Chip8::initialize() {
 	opcode = 0;
 	I = 0;
 	sp = 0;
+
+	delay_timer = 0;
+	sound_timer = 0;
+	
+	//Clear general register, stack, and key
+	for (int i = 0; i < 16; i++) {
+		V[i] = 0;
+		stack[i] = 0;
+		key[i] = 0;
+	}
+
+	interruptFlag = 0;
+	drawFlag = 0;
+	
+	//Clear screen
+	for (int i = 0; i < 64 * 32; i++) {
+		graphic[i] = 0;
+	}
+
+	for (int i = 0; i < 4096; i++) {
+		memory[i] = 0;
+	}
+
+	unsigned char chip8_fontset[80] =
+	{
+	  0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+	  0x20, 0x60, 0x20, 0x20, 0x70, // 1
+	  0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+	  0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+	  0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+	  0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+	  0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+	  0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+	  0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+	  0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+	  0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+	  0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+	  0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+	  0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+	  0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+	  0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+	};
+	//Fill memory FONTSET_OFFSET with fontset
+	for (int i = 0; i < 16; i++) {
+		for (int x = 0; x < 5; x++) {
+			memory[FONTSET_OFFSET + (i * 5) + x] = chip8_fontset[(i * 5) + x];
+		}
+	}
 }
 
 
