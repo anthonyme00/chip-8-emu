@@ -31,8 +31,8 @@ private:
 	unsigned short sp; //Stack pointer
 
 	unsigned char key[16]; //Track current position of key
-	unsigned char drawFlag;
-	unsigned char interruptFlag;
+	//unsigned char interruptFlag;
+	unsigned short sleepTimer;
 
 	//call
 	void call();
@@ -87,10 +87,11 @@ private:
 	void setSoundTimer();
 	//bcd
 	void setBCD();
-
-	void* (Chip8BaseInst[16]);
 public:
-	Chip8();
 	void initialize();
+	void loadProgram(char* data, int len);
+	void loadScreen(char* screenBuf);
 	void doCycle();
+
+	unsigned char drawFlag;
 };

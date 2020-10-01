@@ -1,18 +1,16 @@
 #include "Chip8.h"
 #include <stdlib.h>
+#include <iostream>
 
 #define FONTSET_OFFSET 0x050
 
 /// <summary>
 /// 0x0NNN Machine code subroutine
-/// Presumably shouldn't be the exact same as instruction
-/// 2NNN.
-/// TODO: Research further
+/// Shouldn't be used
 /// </summary>
 void Chip8::call() {
-	stack[sp] = pc; //set current stack to program counter
-	sp++; //increment stack pointer by 1
-	pc = opcode & 0x0FFF; //set pc to NNN
+	//Do nothing. This is only for old machines.
+	pc += 2;
 }
 
 /// <summary>
@@ -23,6 +21,7 @@ void Chip8::disp_clear() {
 		graphic[i] = 0;
 	}
 	drawFlag = 1;
+	pc += 2;
 }
 
 /// <summary>
@@ -31,6 +30,7 @@ void Chip8::disp_clear() {
 void Chip8::ret() {
 	sp--;
 	pc = stack[sp];
+	pc += 2;
 }
 
 /// <summary>
@@ -55,8 +55,10 @@ void Chip8::subroutine() {
 void Chip8::ifVxNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	if (V[x] == (opcode & 0x00ff)) {
-		pc += 2;
+		pc += 4;
+		return;
 	}
+	pc += 2;
 }
 
 /// <summary>
@@ -65,8 +67,10 @@ void Chip8::ifVxNN() {
 void Chip8::ifVxNotNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	if (V[x] != (opcode & 0x00ff)) {
-		pc += 2;
+		pc += 4;
+		return;
 	}
+	pc += 2;
 }
 
 /// <summary>
@@ -76,8 +80,10 @@ void Chip8::ifVxVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	if (V[x] == V[y]) {
-		pc += 2;
+		pc += 4;
+		return;
 	}
+	pc += 2;
 }
 
 /// <summary>
@@ -87,6 +93,7 @@ void Chip8::vxToNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char nn = (opcode & 0x00ff);
 	V[x] = nn;
+	pc += 2;
 }
 
 /// <summary>
@@ -96,6 +103,7 @@ void Chip8::vxAddNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char nn = (opcode & 0x00ff);
 	V[x] += nn;
+	pc += 2;
 }
 
 /// <summary>
@@ -105,6 +113,7 @@ void Chip8::vxToVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	V[x] = V[y];
+	pc += 2;
 }
 
 /// <summary>
@@ -114,6 +123,7 @@ void Chip8::vxOrVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	V[x] |= V[y];
+	pc += 2;
 }
 
 /// <summary>
@@ -123,6 +133,7 @@ void Chip8::vxAndVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	V[x] &= V[y];
+	pc += 2;
 }
 
 /// <summary>
@@ -132,6 +143,7 @@ void Chip8::vxXorVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	V[x] ^= V[y];
+	pc += 2;
 }
 
 /// <summary>
@@ -143,6 +155,7 @@ void Chip8::vxAddVy() {
 	//set carry flag if overflow
 	V[0xf] = (V[x] + V[y]) > 0xff;
 	V[x] += V[y];
+	pc += 2;
 }
 
 /// <summary>
@@ -154,6 +167,7 @@ void Chip8::vxSubVy() {
 	//set carry flag if not underflow
 	V[0xf] = !((V[x] - V[y]) < 0xff);
 	V[x] -= V[y];
+	pc += 2;
 }
 
 /// <summary>
@@ -164,6 +178,7 @@ void Chip8::vxShiftR() {
 	//Set Vf to least significant bit of Vx
 	V[0xf] = V[x] & 0x01;
 	V[x] = V[x] >> 1;
+	pc += 2;
 }
 
 /// <summary>
@@ -175,6 +190,7 @@ void Chip8::vxToVySubVx() {
 	//set carry flag if not underflow
 	V[0xf] = !((V[y] - V[x]) < 0xff);
 	V[x] = V[y] - V[x];
+	pc += 2;
 }
 
 /// <summary>
@@ -185,6 +201,7 @@ void Chip8::vxShiftL() {
 	//Set Vf to most significant bit of Vx
 	V[0xf] = V[x] & 0x80;
 	V[x] = V[x] << 1;
+	pc += 2;
 }
 
 /// <summary>
@@ -194,8 +211,10 @@ void Chip8::ifVxNotVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	if (V[x] != V[y]) {
-		pc += 2;
+		pc += 4;
+		return;
 	}
+	pc += 2;
 }
 
 /// <summary>
@@ -204,6 +223,7 @@ void Chip8::ifVxNotVy() {
 void Chip8::iToNNN() {
 	unsigned short nnn = (opcode & 0x0fff);
 	I = nnn;
+	pc += 2;
 }
 
 /// <summary>
@@ -221,6 +241,7 @@ void Chip8::randAndNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char nn = (opcode & 0x00ff);
 	V[x] = (rand() % 0x100) & nn;
+	pc += 2;
 }
 
 /// <summary>
@@ -230,16 +251,17 @@ void Chip8::draw() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	unsigned char n = (opcode & 0x000f);
-	for (int row = 0; row <= n; row++) {
+	for (int row = 0; row < n; row++) {
 		for (int col = 0; col < 8; col++) {
 			unsigned char bit = (memory[I + (row)] >> (7 - col)) & 0x01;
-			unsigned int pos = 64 * (y + row) + (x + col);
+			unsigned int pos = 64 * (V[y] + row) + (V[x] + col);
 			V[0xf] = graphic[pos] & bit;
 			graphic[pos] = (graphic[pos]^bit);
 		}
 	}
 
 	drawFlag = 1;
+	pc += 2;
 }
 
 /// <summary>
@@ -248,8 +270,10 @@ void Chip8::draw() {
 void Chip8::ifKeyEqVx() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	if (key[V[x]] != 0) {
-		pc += 2;
+		pc += 4;
+		return;
 	}
+	pc += 2;
 }
 
 /// <summary>
@@ -258,8 +282,10 @@ void Chip8::ifKeyEqVx() {
 void Chip8::ifKeyNotEqVx() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	if (key[V[x]] == 0) {
-		pc += 2;
+		pc += 4;
+		return;
 	}
+	pc += 2;
 }
 
 /// <summary>
@@ -268,6 +294,7 @@ void Chip8::ifKeyNotEqVx() {
 void Chip8::getDelay() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	V[x] = delay_timer;
+	pc += 2;
 }
 
 /// <summary>
@@ -278,11 +305,10 @@ void Chip8::waitKey() {
 	for (unsigned char i = 0; i < 16; i++) {
 		if (key[i] != 0) {
 			V[x] = i;
-			interruptFlag = 0;
+			pc += 2;
 			return;
 		}
 	}
-	interruptFlag = 1;
 }
 
 /// <summary>
@@ -291,6 +317,7 @@ void Chip8::waitKey() {
 void Chip8::setDelay() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	delay_timer = V[x];
+	pc += 2;
 }
 
 /// <summary>
@@ -299,6 +326,7 @@ void Chip8::setDelay() {
 void Chip8::setSoundTimer() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	sound_timer = V[x];
+	pc += 2;
 }
 
 /// <summary>
@@ -307,6 +335,7 @@ void Chip8::setSoundTimer() {
 void Chip8::iAddVx() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	I += V[x];
+	pc += 2;
 }
 
 /// <summary>
@@ -316,6 +345,7 @@ void Chip8::iToSprAdd() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	//each character requires 5 bytes of data. stored from 0x050
 	I = FONTSET_OFFSET + 5 * V[x];
+	pc += 2;
 }
 
 /// <summary>
@@ -329,6 +359,7 @@ void Chip8::setBCD() {
 	memory[I + 1] = vx / 10;
 	vx -= (vx / 10) * 10;
 	memory[I + 2] = vx;
+	pc += 2;
 }
 
 /// <summary>
@@ -339,6 +370,7 @@ void Chip8::regDump() {
 	for (int i = 0; i <= x; i++) {
 		memory[I + i] = V[i];
 	}
+	pc += 2;
 }
 
 /// <summary>
@@ -349,11 +381,7 @@ void Chip8::regLoad() {
 	for (int i = 0; i <= x; i++) {
 		V[i] = memory[I + i];
 	}
-}
-
-Chip8::Chip8()
-{
-	//TODO: Route instruction through their proper channel using function pointer array
+	pc += 2;
 }
 
 /// <summary>
@@ -368,7 +396,8 @@ void Chip8::initialize() {
 
 	delay_timer = 0;
 	sound_timer = 0;
-	
+	sleepTimer = 0;
+
 	//Clear general register, stack, and key
 	for (int i = 0; i < 16; i++) {
 		V[i] = 0;
@@ -376,7 +405,6 @@ void Chip8::initialize() {
 		key[i] = 0;
 	}
 
-	interruptFlag = 0;
 	drawFlag = 0;
 	
 	//Clear screen
@@ -418,9 +446,149 @@ void Chip8::initialize() {
 
 void Chip8::doCycle() {
 	//every opcode is 2 bytes long. stored in big endian
-	unsigned short opcode = memory[pc] << 8 | memory[pc+1];
+	opcode = memory[pc] << 8 | memory[pc+1];
 
-	if (!interruptFlag) {
-		pc += 2; //Increase program counter by 2 since each opcode is 2 bytes long
+	sleepTimer++;
+	sleepTimer %= 8;
+	if (sleepTimer == 0) {
+		if (delay_timer > 0) delay_timer--;
+		if (sound_timer > 0) sound_timer--;
+	}
+
+	//channel the opcode to correct operation
+	switch ((opcode & 0xf000) >> 12) {
+	case 0x0:
+		switch ((opcode & 0x00ff)) {
+		case 0x00ee:
+			ret();
+			break;
+		case 0x00e0:
+			disp_clear();
+			break;
+		default:
+			call();
+			break;
+		}
+		break;
+	case 0x1:
+		go_to();
+		break;
+	case 0x2:
+		subroutine();
+		break;
+	case 0x3:
+		ifVxNN();
+		break;
+	case 0x4:
+		ifVxNotNN();
+		break;
+	case 0x5:
+		ifVxVy();
+		break;
+	case 0x6:
+		vxToNN();
+		break;
+	case 0x7:
+		vxAddNN();
+		break;
+	case 0x8:
+		switch (opcode & 0x000f) {
+		case 0x0:
+			vxToVy();
+			break;
+		case 0x1:
+			vxOrVy();
+			break;
+		case 0x2:
+			vxAndVy();
+			break;
+		case 0x3:
+			vxXorVy();
+			break;
+		case 0x4:
+			vxAddVy();
+			break;
+		case 0x5:
+			vxSubVy();
+			break;
+		case 0x6:
+			vxShiftR();
+			break;
+		case 0x7:
+			vxToVySubVx();
+			break;
+		case 0xe:
+			vxShiftL();
+			break;
+		}
+		break;
+	case 0x9:
+		ifVxNotVy();
+		break;
+	case 0xa:
+		iToNNN();
+		break;
+	case 0xb:
+		jmpToNNNAddV0();
+		break;
+	case 0xc:
+		randAndNN();
+		break;
+	case 0xd:
+		draw();
+		break;
+	case 0xe:
+		switch (opcode & 0x00ff) {
+		case 0x9e:
+			ifKeyEqVx();
+			break;
+		case 0xa1:
+			ifKeyNotEqVx();
+			break;
+		}
+		break;
+	case 0xf:
+		switch (opcode & 0x00ff) {
+		case 0x07:
+			getDelay();
+			break;
+		case 0x0a:
+			waitKey();
+			break;
+		case 0x15:
+			setDelay();
+			break;
+		case 0x18:
+			setSoundTimer();
+			break;
+		case 0x1e:
+			iAddVx();
+			break;
+		case 0x29:
+			iToSprAdd();
+			break;
+		case 0x33:
+			setBCD();
+			break;
+		case 0x55:
+			regDump();
+			break;
+		case 0x65:
+			regLoad();
+			break;
+		}
+		break;
+	}
+}
+
+void Chip8::loadProgram(char* data, int len) {
+	for (int i = 0; i < len; i++) {
+		memory[0x200 + i] = data[i];
+	}
+}
+
+void Chip8::loadScreen(char* screenBuf) {
+	for (int i = 0; i < 64 * 32; i++) {
+		screenBuf[i] = graphic[i];
 	}
 }
