@@ -9,7 +9,7 @@ using namespace std;
 int main()
 {
 	fstream fs;
-	fs.open("../res/roms/PONG", fstream::in | fstream::binary);
+	fs.open("../res/roms/UFO", fstream::in | fstream::binary);
 
 	fs.seekg(0, fs.end);
 	int len = fs.tellg();
@@ -23,24 +23,52 @@ int main()
 	core.loadProgram(romData, len);
 
 	char screenBuf[64 * 32];
+	for (int i = 0; i < 64 * 32; i++) {
+		screenBuf[i] = 0;
+	}
+
 	while (true) {
 		core.doCycle();
+
 		if (core.drawFlag) {
-			system("cls");
 			core.loadScreen(screenBuf);
-			for (int y = 0; y < 32; y++) {
-				for (int x = 0; x < 64; x++) {
-					if (screenBuf[y * 64 + x]) {
-						cout << "O";
-					}
-					else {
-						cout << " ";
-					}
+		}
+
+		system("cls");
+
+		for (int y = 0; y < 32; y++) {
+			for (int x = 0; x < 64; x++) {
+				if (screenBuf[y * 64 + x]) {
+					cout << "O";
 				}
+				else {
+					cout << " ";
+				}
+			}
+			cout << endl;
+		}
+
+		Chip8::DebugInfo info = core.dumpDebug();
+
+		cout << hex;
+		cout << "PC : " << info.pc << endl;
+		cout << "OPCODE : " << info.opcode << endl;
+		cout << "I : " << (int)info.i << endl << endl;
+
+		cout << "Delay : " << info.timer_delay << endl;
+		cout << "Sound : " << info.timer_sound << endl;
+
+		for (int i = 0; i < 16; i++) {
+			cout << "V[" << i << "] : " << (int)info.V[i] << " ";
+			if (i % 8 == 0) {
 				cout << endl;
 			}
 		}
-		std::this_thread::sleep_for(2ms);
+
+		/*char in;
+		cin >> in;*/
+
+		this_thread::sleep_for(2ms);
 	}
 
 	delete[] romData;

@@ -34,6 +34,7 @@ private:
 	//unsigned char interruptFlag;
 	unsigned short sleepTimer;
 
+	unsigned short fetch();
 	//call
 	void call();
 	//display
@@ -92,6 +93,31 @@ public:
 	void loadProgram(char* data, int len);
 	void loadScreen(char* screenBuf);
 	void doCycle();
+
+	struct DebugInfo {
+		unsigned short pc = 0;
+		unsigned short opcode = 0;
+		unsigned char V[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		unsigned char i = 0;
+		unsigned short timer_delay = 0;
+		unsigned short timer_sound = 0;
+
+		DebugInfo(unsigned short pc, unsigned short opcode, unsigned char* V, unsigned char i, unsigned timer_delay, unsigned timer_sound) {
+			this->pc = pc;
+			this->opcode = opcode;
+			for (int i = 0; i < 16; i++) {
+				this->V[i] = V[i];
+			}
+			this->i = i;
+
+			this->timer_delay = timer_delay;
+			this->timer_sound = timer_sound;
+		}
+	};
+
+	DebugInfo dumpDebug() {
+		return DebugInfo(pc, opcode, V, I, delay_timer, sound_timer);
+	}
 
 	unsigned char drawFlag;
 };
