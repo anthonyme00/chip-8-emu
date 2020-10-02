@@ -4,17 +4,20 @@
 #include <thread>
 #include <chrono>
 
+#include <SDL.h>
+#include <stdio.h>
+
 using namespace std;
 
-int main()
+int main(int argc, char* args[])
 {
 	fstream fs;
-	fs.open("../res/roms/UFO", fstream::in | fstream::binary);
+	fs.open("res/roms/HIDDEN", fstream::in | fstream::binary);
 
 	fs.seekg(0, fs.end);
 	int len = fs.tellg();
 	fs.seekg(0, fs.beg);
-
+	
 	char* romData = new char[len];
 	fs.read(romData, len);
 	

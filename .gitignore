@@ -351,3 +351,6 @@ MigrationBackup/
 
 # Roms
 res/roms/
+
+# Libraries
+libs/*
