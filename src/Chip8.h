@@ -1,9 +1,12 @@
 #pragma once
 /// <summary>
 /// Chip 8 Implementation
+/// ===================================================================================
 /// Based on:
 /// http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
 /// https://en.wikipedia.org/wiki/CHIP-8#Opcode_table
+/// ===================================================================================
+/// For info on the private functions, see Chip8.cpp
 /// </summary>
 class Chip8
 {
@@ -31,10 +34,10 @@ private:
 	unsigned short sp; //Stack pointer
 
 	unsigned char key[16]; //Track current position of key
-	//unsigned char interruptFlag;
 	unsigned short sleepTimer;
 
 	unsigned short fetch();
+
 	//call
 	void call();
 	//display
@@ -94,6 +97,9 @@ public:
 	void loadScreen(char* screenBuf);
 	void doCycle();
 
+	/// <summary>
+	/// Basic debugging info for our CHIP-8 machine
+	/// </summary>
 	struct DebugInfo {
 		unsigned short pc = 0;
 		unsigned short opcode = 0;

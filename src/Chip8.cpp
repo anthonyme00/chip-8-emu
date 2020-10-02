@@ -3,6 +3,7 @@
 #include <iostream>
 
 #define FONTSET_OFFSET 0x050
+#define PROGRAM_OFFSET 0x200
 
 /// <summary>
 /// 0x0NNN Machine code subroutine
@@ -14,6 +15,7 @@ void Chip8::call() {
 
 /// <summary>
 /// 00E0
+/// Clears the display
 /// </summary>
 void Chip8::disp_clear() {
 	for (int i = 0; i < 64 * 32; i++) {
@@ -24,6 +26,8 @@ void Chip8::disp_clear() {
 
 /// <summary>
 /// 00EE
+///	Return from a subroutine by getting the previous
+/// Address from the stack
 /// </summary>
 void Chip8::ret() {
 	sp--;
@@ -32,6 +36,7 @@ void Chip8::ret() {
 
 /// <summary>
 /// 1NNN
+/// Shift the program counter to a different memory location
 /// </summary>
 void Chip8::go_to() {
 	pc = opcode & 0x0FFF; //jump to NNN
@@ -39,6 +44,9 @@ void Chip8::go_to() {
 
 /// <summary>
 /// 2NNN
+/// Shift the program counter to a different memory location
+/// while storing the current memory location so we can return
+/// to it later
 /// </summary>
 void Chip8::subroutine() {
 	stack[sp] = pc; //set current stack to program counter
@@ -48,6 +56,8 @@ void Chip8::subroutine() {
 
 /// <summary>
 /// 3XNN
+/// If register V[x] is equal to NN, then skip the following
+/// OPCODE
 /// </summary>
 void Chip8::ifVxNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -59,6 +69,8 @@ void Chip8::ifVxNN() {
 
 /// <summary>
 /// 4XNN
+/// If register V[x] is NOT equal to NN, then skip the following
+/// OPCODE
 /// </summary>
 void Chip8::ifVxNotNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -70,6 +82,8 @@ void Chip8::ifVxNotNN() {
 
 /// <summary>
 /// 5XY0
+/// If register V[x] is equal to register V[y] then skip the following
+/// OPCODE
 /// </summary>
 void Chip8::ifVxVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -82,6 +96,7 @@ void Chip8::ifVxVy() {
 
 /// <summary>
 /// 6XNN
+/// Set register V[x] to NN
 /// </summary>
 void Chip8::vxToNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -91,6 +106,7 @@ void Chip8::vxToNN() {
 
 /// <summary>
 /// 7XNN
+/// Add NN to register V[x]
 /// </summary>
 void Chip8::vxAddNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -100,6 +116,7 @@ void Chip8::vxAddNN() {
 
 /// <summary>
 /// 8XY0
+/// Set register V[x] to V[y]
 /// </summary>
 void Chip8::vxToVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -109,6 +126,7 @@ void Chip8::vxToVy() {
 
 /// <summary>
 /// 8XY1
+/// Do OR bit op on V[x] with V[y]
 /// </summary>
 void Chip8::vxOrVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -118,6 +136,7 @@ void Chip8::vxOrVy() {
 
 /// <summary>
 /// 8XY2
+/// Do AND bit op on V[x] with V[y]
 /// </summary>
 void Chip8::vxAndVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -127,6 +146,7 @@ void Chip8::vxAndVy() {
 
 /// <summary>
 /// 8XY3
+/// Do XOR bit op on V[x] with V[y]
 /// </summary>
 void Chip8::vxXorVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -136,6 +156,7 @@ void Chip8::vxXorVy() {
 
 /// <summary>
 /// 8XY4
+/// Add V[y] to V[x]
 /// </summary>
 void Chip8::vxAddVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -147,6 +168,7 @@ void Chip8::vxAddVy() {
 
 /// <summary>
 /// 8XY5
+/// Subtract V[y] from V[x]
 /// </summary>
 void Chip8::vxSubVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -158,6 +180,8 @@ void Chip8::vxSubVy() {
 
 /// <summary>
 /// 8XY6
+/// Bit shift V[x] to the right while storing the least
+/// significant bit to V[f]
 /// </summary>
 void Chip8::vxShiftR() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -168,6 +192,7 @@ void Chip8::vxShiftR() {
 
 /// <summary>
 /// 8XY7
+/// Set V[x] to V[y] subtracted by V[y]
 /// </summary>
 void Chip8::vxToVySubVx() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -179,6 +204,8 @@ void Chip8::vxToVySubVx() {
 
 /// <summary>
 /// 8XYE
+/// Bit shift V[x] to the left while storing the most
+/// significant bit to V[f]
 /// </summary>
 void Chip8::vxShiftL() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -189,6 +216,8 @@ void Chip8::vxShiftL() {
 
 /// <summary>
 /// 9XY0
+/// If V[x] is NOT equals to V[y] then skip the following
+/// OPCODE
 /// </summary>
 void Chip8::ifVxNotVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -201,6 +230,7 @@ void Chip8::ifVxNotVy() {
 
 /// <summary>
 /// ANNN
+/// Sets I memory pointer register to NNN
 /// </summary>
 void Chip8::iToNNN() {
 	unsigned short nnn = (opcode & 0x0fff);
@@ -209,6 +239,7 @@ void Chip8::iToNNN() {
 
 /// <summary>
 /// BNNN
+/// Sets PC to NNN added with V[0]
 /// </summary>
 void Chip8::jmpToNNNAddV0() {
 	unsigned short nnn = (opcode & 0x0fff);
@@ -217,6 +248,8 @@ void Chip8::jmpToNNNAddV0() {
 
 /// <summary>
 /// CXNN
+/// Sets V[x] to a random number with NN as a bit mask
+/// applied to it
 /// </summary>
 void Chip8::randAndNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -226,6 +259,8 @@ void Chip8::randAndNN() {
 
 /// <summary>
 /// DXYN
+/// Draw a sprite of height N at position (V[x], V[y]),
+/// with the sprite location in memory pointed to by I
 /// </summary>
 void Chip8::draw() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -245,6 +280,8 @@ void Chip8::draw() {
 
 /// <summary>
 /// EX9E
+/// If a key is pressed that is equals to V[x] then
+/// skip the following OPCODE
 /// </summary>
 void Chip8::ifKeyEqVx() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -256,6 +293,8 @@ void Chip8::ifKeyEqVx() {
 
 /// <summary>
 /// EXA1
+/// If a key is pressed that is NOT equals to V[x] then
+/// skip the following OPCODE
 /// </summary>
 void Chip8::ifKeyNotEqVx() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -267,6 +306,7 @@ void Chip8::ifKeyNotEqVx() {
 
 /// <summary>
 /// FX07
+/// Sets V[x] to the current value of delay_timer
 /// </summary>
 void Chip8::getDelay() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -275,6 +315,9 @@ void Chip8::getDelay() {
 
 /// <summary>
 /// FX0A
+/// Wait for a key to be pressed and then store
+/// the keycode in V[x]. This is a blocking operation
+/// which means no further OPCODE will be run when this is running
 /// </summary>
 void Chip8::waitKey() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -291,6 +334,7 @@ void Chip8::waitKey() {
 
 /// <summary>
 /// FX15
+/// Set delay_timer to V[x]
 /// </summary>
 void Chip8::setDelay() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -299,6 +343,7 @@ void Chip8::setDelay() {
 
 /// <summary>
 /// FX18
+/// Set sound_timer to V[x]
 /// </summary>
 void Chip8::setSoundTimer() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -307,6 +352,7 @@ void Chip8::setSoundTimer() {
 
 /// <summary>
 /// FX1E
+/// Adds V[x] to I
 /// </summary>
 void Chip8::iAddVx() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -315,6 +361,7 @@ void Chip8::iAddVx() {
 
 /// <summary>
 /// FX29
+/// Sets I to the location of character graphic V[x] in memory
 /// </summary>
 void Chip8::iToSprAdd() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -324,6 +371,8 @@ void Chip8::iToSprAdd() {
 
 /// <summary>
 /// FX33
+/// Stores the BCD representation of V[x] in memory.
+/// Uses 3 bytes of memory, starting from I to I+2
 /// </summary>
 void Chip8::setBCD() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -337,6 +386,8 @@ void Chip8::setBCD() {
 
 /// <summary>
 /// FX55
+/// Dumps the content of our memory from I to x.
+/// Stores it in V[0] to V[x]
 /// </summary>
 void Chip8::regDump() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -347,6 +398,8 @@ void Chip8::regDump() {
 
 /// <summary>
 /// FX65
+/// Loads the content of V[0] to V[x] to memory.
+/// Stores it in I to I+x
 /// </summary>
 void Chip8::regLoad() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
@@ -360,7 +413,7 @@ void Chip8::regLoad() {
 /// Initialize all to it's proper value
 /// </summary>
 void Chip8::initialize() {
-	pc = 0x200; //program resides in memory address starting from 0x200
+	pc = PROGRAM_OFFSET; //Program resides in memory address starting from 0x200
 	opcode = 0;
 	I = 0;
 	sp = 0;
@@ -383,10 +436,15 @@ void Chip8::initialize() {
 		graphic[i] = 0;
 	}
 
+	//Clear memory
 	for (int i = 0; i < 4096; i++) {
 		memory[i] = 0;
 	}
 
+	/// <summary>
+	/// This is the default Chip8 fontset. acquired from
+	///	http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
+	/// </summary>
 	unsigned char chip8_fontset[80] =
 	{
 	  0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -414,6 +472,10 @@ void Chip8::initialize() {
 	}
 }
 
+/// <summary>
+/// Fetches next OPCODE
+/// </summary>
+/// <returns>our opcode</returns>
 unsigned short Chip8::fetch() {
 	unsigned short op = memory[pc] << 8 | memory[pc + 1];
 	pc += 2;
@@ -425,6 +487,14 @@ void Chip8::doCycle() {
 	//every opcode is 2 bytes long. stored in big endian
 	opcode = fetch();
 
+	//reset draw flag
+	drawFlag = 0;
+
+	//this is a very basic timer implementation.
+	//since CHIP8 has a refresh rate of 500hz, Roughly
+	//1/60th of a second passes every 8 clock pulse.
+	//in reality, this should asynchronous.
+	//TODO: DO PROPER TIMING
 	sleepTimer++;
 	sleepTimer %= 8;
 
@@ -559,12 +629,21 @@ void Chip8::doCycle() {
 	}
 }
 
+/// <summary>
+/// Load rom to our Chip-8 Machine
+/// </summary>
+/// <param name="data">data to load</param>
+/// <param name="len">size of data in bytes</param>
 void Chip8::loadProgram(char* data, int len) {
 	for (int i = 0; i < len; i++) {
-		memory[0x200 + i] = data[i];
+		memory[PROGRAM_OFFSET + i] = data[i];
 	}
 }
 
+/// <summary>
+/// Fill a char buffer with our screen information
+/// </summary>
+/// <param name="screenBuf">buffer to fill</param>
 void Chip8::loadScreen(char* screenBuf) {
 	for (int i = 0; i < 64 * 32; i++) {
 		screenBuf[i] = graphic[i];
