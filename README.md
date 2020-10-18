@@ -11,6 +11,11 @@ You can get roms from [here](http://www.pong-story.com/chip8/). Create a new fol
 ***
 PONG
 
+![pong](https://github.com/anthonyme00/github-markdown-resource/blob/main/chip-8-emu/chip-8-emu-pong.gif "PONG!")
+
+## Outdated Console Version
+PONG
+
 ![pong](https://github.com/anthonyme00/github-markdown-resource/blob/main/chip-8-emu/chip-8-emu-pong.png "PONG!")
 
 UFO
