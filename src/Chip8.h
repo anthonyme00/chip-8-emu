@@ -95,6 +95,7 @@ public:
 	void initialize();
 	void loadProgram(char* data, int len);
 	void loadScreen(char* screenBuf);
+	void loadKey(unsigned char* keys);
 	void doCycle();
 
 	/// <summary>

@@ -61,7 +61,7 @@ void Chip8::subroutine() {
 /// </summary>
 void Chip8::ifVxNN() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
-	if (V[x] == (opcode & 0x00ff)) {
+	if (V[x] == (unsigned char)(opcode & 0x00ff)) {
 		pc += 2;
 		return;
 	}
@@ -162,7 +162,7 @@ void Chip8::vxAddVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	//set carry flag if overflow
-	V[0xf] = (V[x] + V[y]) > 0xff;
+	V[0xf] = ((int)(V[x] + V[y])) > 0xff;
 	V[x] += V[y];
 }
 
@@ -174,7 +174,7 @@ void Chip8::vxSubVy() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	//set carry flag if not underflow
-	V[0xf] = !((V[x] - V[y]) < 0xff);
+	V[0xf] = V[x] > V[y];
 	V[x] -= V[y];
 }
 
@@ -192,13 +192,13 @@ void Chip8::vxShiftR() {
 
 /// <summary>
 /// 8XY7
-/// Set V[x] to V[y] subtracted by V[y]
+/// Set V[x] to V[y] subtracted by V[x]
 /// </summary>
 void Chip8::vxToVySubVx() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	//set carry flag if not underflow
-	V[0xf] = !((V[y] - V[x]) < 0xff);
+	V[0xf] = V[y] > V[x];
 	V[x] = V[y] - V[x];
 }
 
@@ -266,15 +266,16 @@ void Chip8::draw() {
 	unsigned char x = (opcode & 0x0f00) >> 8;
 	unsigned char y = (opcode & 0x00f0) >> 4;
 	unsigned char n = (opcode & 0x000f);
+	V[0xf] = 0;
 	for (int row = 0; row < n; row++) {
 		for (int col = 0; col < 8; col++) {
 			unsigned char bit = (memory[I + (row)] >> (7 - col)) & 0x01;
 			unsigned int pos = 64 * (V[y] + row) + (V[x] + col);
-			V[0xf] = graphic[pos] & bit;
+			if((graphic[pos] & bit) == 1)
+				V[0xf] = 1;
 			graphic[pos] = (graphic[pos]^bit);
 		}
 	}
-
 	drawFlag = 1;
 }
 
@@ -498,6 +499,8 @@ void Chip8::doCycle() {
 	sleepTimer++;
 	sleepTimer %= 8;
 
+	if (sound_timer > 0) std::cout << "BEEP" << std::endl;
+
 	if (sleepTimer == 0) {
 		if (delay_timer > 0) delay_timer--;
 		if (sound_timer > 0) sound_timer--;
@@ -647,5 +650,11 @@ void Chip8::loadProgram(char* data, int len) {
 void Chip8::loadScreen(char* screenBuf) {
 	for (int i = 0; i < 64 * 32; i++) {
 		screenBuf[i] = graphic[i];
+	}
+}
+
+void Chip8::loadKey(unsigned char* keys) {
+	for (int i = 0; i < 16; i++) {
+		this->key[i] = keys[i];
 	}
 }
