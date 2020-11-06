@@ -353,4 +353,4 @@ MigrationBackup/
 res/roms/
 
 # Libraries
-libs/*
+libs/sdl2/

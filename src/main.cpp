@@ -1,18 +1,104 @@
+#include "Chip8.h"
+
 #include <iostream>
 #include <fstream>
-#include "Chip8.h"
 #include <thread>
 #include <chrono>
-
-#include <SDL.h>
 #include <stdio.h>
 
-using namespace std;
+#include <SDL.h>
+
+#include <imgui.h>
+#include <backends/imgui_impl_sdl.h>
+#include <backends/imgui_impl_opengl3.h>
+
+#include <GL/gl3w.h>
+
+#define WINDOW_RES_X 640
+#define WINDOW_RES_Y 480
+
+SDL_Window* window = NULL;
+SDL_Surface* screenSurface = NULL;
+SDL_GLContext gl_context = NULL;
+
+#define GLSL_VER "#version 130"
+const int gl_major_ver = 3;
+const int gl_minor_ver = 0;
+
+bool init() 
+{
+	if (SDL_Init(SDL_INIT_VIDEO) != 0)
+	{
+		return false;
+	}
+
+	//Use OpenGL 3.0 + GLSL 1.30
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gl_major_ver);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, gl_minor_ver);
+	//Do not use deprecated functions
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+	window = SDL_CreateWindow("Chip-8 Emu", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_RES_X, WINDOW_RES_Y, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE);
+	gl_context = SDL_GL_CreateContext(window);
+	SDL_GL_MakeCurrent(window, gl_context);
+	SDL_GL_SetSwapInterval(1);
+
+	if (gl3wInit() != 0)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void init_imgui()
+{
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui::StyleColorsDark();
+
+	ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+	ImGui_ImplOpenGL3_Init(GLSL_VER);
+}
+
+void draw_imgui() 
+{
+	if (ImGui::BeginMainMenuBar()) {
+		if (ImGui::BeginMenu("File")) {
+			ImGui::EndMenu();
+		}
+		
+		ImGui::EndMainMenuBar();
+	}
+	ImGui::Begin("A Window", 0, ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize);
+	ImGui::Text("Hello World");
+	ImGui::End();
+	ImGui::SetNextWindowPos(ImVec2(0, 100));
+	ImGui::Begin("A Window 2", 0, ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoCollapse);
+	ImGui::Text("Hello World 2");
+	ImGui::End();
+}
+
+void cleanup()
+{
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
+	
+	SDL_GL_DeleteContext(gl_context);
+	SDL_DestroyWindow(window);
+	SDL_Quit();
+}
 
 int main(int argc, char* args[])
 {
-	fstream fs;
-	fs.open("res/roms/PONG", fstream::in | fstream::binary);
+	/*OLD*/
+	std::fstream fs;
+	fs.open("res/roms/MERLIN", std::fstream::in | std::fstream::binary);
 
 	fs.seekg(0, fs.end);
 	int len = fs.tellg();
@@ -25,11 +111,10 @@ int main(int argc, char* args[])
 	core.initialize();
 	core.loadProgram(romData, len);
 
-	SDL_Window* window = NULL;
-	SDL_Surface* screenSurface = NULL;
+	init();
 
-	SDL_Init(SDL_INIT_VIDEO);
-	window = SDL_CreateWindow("CHIP-8EMU", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 512, 256, SDL_WINDOW_SHOWN);
+	init_imgui();
+
 	screenSurface = SDL_GetWindowSurface(window);
 	unsigned char* pixels = (unsigned char*)screenSurface->pixels;
 	SDL_PixelFormat* fmt = screenSurface->format;
@@ -52,6 +137,8 @@ int main(int argc, char* args[])
 		core.doCycle();
 
 		while (SDL_PollEvent(&e) != 0) {
+			ImGui_ImplSDL2_ProcessEvent(&e);
+
 			if (e.type == SDL_QUIT) {
 				exit = true;
 			}
@@ -113,6 +200,19 @@ int main(int argc, char* args[])
 			core.loadKey(keybuf);
 		}
 
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplSDL2_NewFrame(window);
+		ImGui::NewFrame();
+		draw_imgui();
+
+		ImGui::Render();
+		glViewport(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
+		glClearColor(0, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		SDL_GL_SwapWindow(window);
+
+		/*
 		if (core.drawFlag) {
 			core.loadScreen(screenBuf);
 
@@ -129,41 +229,9 @@ int main(int argc, char* args[])
 
 			SDL_UpdateWindowSurface(window);
 		}
-
-		/*
-		system("cls");
-
-		for (int y = 0; y < 32; y++) {
-			for (int x = 0; x < 64; x++) {
-				if (screenBuf[y * 64 + x]) {
-					cout << "O";
-				}
-				else {
-					cout << " ";
-				}
-			}
-			cout << endl;
-		}
-
-		Chip8::DebugInfo info = core.dumpDebug();
-
-		cout << hex;
-		cout << "PC : " << info.pc << endl;
-		cout << "OPCODE : " << info.opcode << endl;
-		cout << "I : " << (int)info.i << endl << endl;
-
-		cout << "Delay : " << info.timer_delay << endl;
-		cout << "Sound : " << info.timer_sound << endl;
-
-		for (int i = 0; i < 16; i++) {
-			if (i % 8 == 0) {
-				cout << endl;
-			}
-			cout << "V[" << i << "] : " << (int)info.V[i] << "\t";
-		}
 		*/
 
-		this_thread::sleep_for(5000ns);
+		std::this_thread::sleep_for(std::chrono::nanoseconds(2500));
 	}
 
 	SDL_FreeSurface(screenSurface);

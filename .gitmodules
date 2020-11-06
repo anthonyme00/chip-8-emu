@@ -1,0 +1,6 @@
+[submodule "libs/imgui"]
+	path = libs/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "libs/gl3w"]
+	path = libs/gl3w
+	url = https://github.com/skaslev/gl3w
