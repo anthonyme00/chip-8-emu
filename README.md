@@ -24,7 +24,7 @@ git submodule init
 git submodule update
 ```
 
-Download [SDL2 Development Library](https://www.libsdl.org/download-2.0.php) for your target OS. Extract the folder inside, rename it to SDL2 and put it in
+Download [SDL2 Development Library](https://www.libsdl.org/download-2.0.php) for Visual C++. Extract the folder inside, rename it to SDL2 and put it in
 ```
 libs\SDL2
 ```
