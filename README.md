@@ -1,19 +1,57 @@
-# chip-8-emu
-Just another chip-8 emulator. Created as a hobby project.
+# CHIP-8-EMU
+A simple chip-8 emulator.
+You can get roms from [here](http://www.pong-story.com/chip8/).
 
-Very slow at the moment. Plays Chip-8 roms. Currently tested with UFO and PONG.
+This project was created to learn about how computer works at a very basic level.
 
-You can get roms from [here](http://www.pong-story.com/chip8/). Create a new folder from root as such /res/roms/ (you don't have to do this. it's just nicer this way).
+## Building
+Prerequisites:
+- Visual Studio 2019
+- Python
+- SDL 2 Development Lib (see below)
 
 
+Clone this repository
 
-### In Action
+```
+git clone https://github.com/anthonyme00/chip-8-emu/
+```
+
+Initialize and update the submodules
+
+```
+git submodule init
+git submodule update
+```
+
+Download [SDL2](https://www.libsdl.org/download-2.0.php) Development Library for your target OS. Extract the folder inside, rename it to SDL2 and put it in
+```
+libs\SDL2
+```
+
+After which the folder structure should look like
+```
+libs\SDL2
+libs\SDL2\docs
+libs\SDL2\include
+libs\SDL2\lib
+...
+```
+
+Go to libs\gl3w and run gl3w_gen.py
+```
+python gl3w.py
+```
+
+Open the `chip-8.sln` file and build.
+
+## In Action
 ***
 PONG
 
 ![pong](https://github.com/anthonyme00/github-markdown-resource/blob/main/chip-8-emu/chip-8-emu-pong.gif "PONG!")
 
-## Outdated Console Version
+#### Outdated Console Version
 PONG
 
 ![pong](https://github.com/anthonyme00/github-markdown-resource/blob/main/chip-8-emu/chip-8-emu-pong.png "PONG!")
