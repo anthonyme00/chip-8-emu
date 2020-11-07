@@ -1,9 +1,8 @@
-# chip-8-emu
-Just another chip-8 emulator. Created as a hobby project.
-
-Plays Chip-8 roms.
-
+# CHIP-8-EMU
+A simple chip-8 emulator.
 You can get roms from [here](http://www.pong-story.com/chip8/).
+
+This project was created to learn about how computer works at a very basic level.
 
 ## Building
 Prerequisites:
