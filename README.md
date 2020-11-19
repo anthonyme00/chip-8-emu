@@ -16,13 +16,17 @@ This project was created to learn about how computer works at a very basic level
 |Z|X|C|R|                 |A|0|B|F|
 +-------+                 +-------+
 ```
-
 ## Building
 Prerequisites:
 - Visual Studio 2019
 - Python
 - SDL 2 Development Lib (see below)
 
+## Building
+Prerequisites:
+- Visual Studio 2019
+- Python
+- SDL 2 Development Lib (see below)
 
 Clone this repository
 
