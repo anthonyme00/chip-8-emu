@@ -14,6 +14,8 @@
 
 #include <GL/gl3w.h>
 
+#include <nfd.h>
+
 #define WINDOW_RES_X 640
 #define WINDOW_RES_Y 480
 
@@ -23,6 +25,9 @@ SDL_GLContext gl_context = NULL;
 #define GLSL_VER "#version 130"
 const int gl_major_ver = 3;
 const int gl_minor_ver = 0;
+
+Chip8 core;
+bool rom_loaded = false;
 
 bool init() 
 {
@@ -70,9 +75,32 @@ void draw_imgui()
 {
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
+			if (ImGui::MenuItem("Open Rom")) {
+				nfdchar_t *path = NULL;
+				nfdresult_t result = NFD_OpenDialog(NULL, NULL, &path);
+
+				if (result == NFD_OKAY) {
+					core.initialize();
+
+					std::fstream fs;
+					fs.open(path, std::fstream::in | std::fstream::binary);
+
+					fs.seekg(0, fs.end);
+					int len = fs.tellg();
+					fs.seekg(0, fs.beg);
+
+					char* romData = new char[len];
+					fs.read(romData, len);
+
+					core.loadProgram(romData, len);
+					rom_loaded = true;
+
+					delete[] romData;
+					fs.close();
+				}
+			}
 			ImGui::EndMenu();
-		}
-		
+		}		
 		ImGui::EndMainMenuBar();
 	}
 	/*
@@ -98,11 +126,12 @@ void cleanup()
 	SDL_Quit();
 }
 
+
 int main(int argc, char* args[])
 {
-	/*OLD*/
+	/*
 	std::fstream fs;
-	fs.open("res/roms/PONG", std::fstream::in | std::fstream::binary);
+	fs.open("res/roms/INVADERS", std::fstream::in | std::fstream::binary);
 
 	fs.seekg(0, fs.end);
 	int len = fs.tellg();
@@ -110,10 +139,11 @@ int main(int argc, char* args[])
 	
 	char* romData = new char[len];
 	fs.read(romData, len);
-	
-	Chip8 core = Chip8();
+	*/
+
+	core = Chip8();
 	core.initialize();
-	core.loadProgram(romData, len);
+	//core.loadProgram(romData, len);
 
 	init();
 
@@ -122,7 +152,7 @@ int main(int argc, char* args[])
 	SDL_Event e;
 
 	unsigned char screenBuf[64 * 32 * 3];
-	for (int i = 0; i < 64 * 32; i++) {
+	for (int i = 0; i < 64 * 32 * 3; i++) {
 		screenBuf[i] = 0;
 	}
 
@@ -144,7 +174,8 @@ int main(int argc, char* args[])
 		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		core.doCycle();
+		if(rom_loaded)
+			core.doCycle();
 
 		while (SDL_PollEvent(&e) != 0) {
 			ImGui_ImplSDL2_ProcessEvent(&e);
@@ -225,8 +256,10 @@ int main(int argc, char* args[])
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 64, 32, GL_RGB, GL_UNSIGNED_BYTE, screenBuf);
 		}
 		
-		ImGui::Begin("Test");
-		ImGui::Image((void*)chip_8_window, ImVec2(256, 128));
+		ImGui::SetNextWindowSize(ImVec2(530, 300));
+		ImGui::SetNextWindowPos(ImVec2(0, 25));
+		ImGui::Begin("Chip-8", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+		ImGui::Image((void*)chip_8_window, ImVec2(512, 256));
 		ImGui::End();
 
 		ImGui::Render();
@@ -258,7 +291,5 @@ int main(int argc, char* args[])
 
 	SDL_DestroyWindow(window);
 
-	delete[] romData;
-	fs.close();
 	return 0;
 }
