@@ -647,9 +647,11 @@ void Chip8::loadProgram(char* data, int len) {
 /// Fill a char buffer with our screen information
 /// </summary>
 /// <param name="screenBuf">buffer to fill</param>
-void Chip8::loadScreen(char* screenBuf) {
+void Chip8::loadScreen(unsigned char* screenBuf) {
 	for (int i = 0; i < 64 * 32; i++) {
-		screenBuf[i] = graphic[i];
+		screenBuf[i*3] = graphic[i] * 255;
+		screenBuf[i*3+1] = graphic[i] * 255;
+		screenBuf[i*3+2] = graphic[i] * 255;
 	}
 }
 

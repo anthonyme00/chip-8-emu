@@ -18,7 +18,6 @@
 #define WINDOW_RES_Y 480
 
 SDL_Window* window = NULL;
-SDL_Surface* screenSurface = NULL;
 SDL_GLContext gl_context = NULL;
 
 #define GLSL_VER "#version 130"
@@ -42,10 +41,12 @@ bool init()
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
+
 	window = SDL_CreateWindow("Chip-8 Emu", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_RES_X, WINDOW_RES_Y, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE);
 	gl_context = SDL_GL_CreateContext(window);
 	SDL_GL_MakeCurrent(window, gl_context);
-	SDL_GL_SetSwapInterval(1);
+	//Disable opengl because this makes emulation slow
+	SDL_GL_SetSwapInterval(0);
 
 	if (gl3wInit() != 0)
 	{
@@ -74,6 +75,7 @@ void draw_imgui()
 		
 		ImGui::EndMainMenuBar();
 	}
+	/*
 	ImGui::Begin("A Window", 0, ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize);
 	ImGui::Text("Hello World");
 	ImGui::End();
@@ -81,6 +83,8 @@ void draw_imgui()
 	ImGui::Begin("A Window 2", 0, ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoCollapse);
 	ImGui::Text("Hello World 2");
 	ImGui::End();
+	*/
+	
 }
 
 void cleanup()
@@ -98,7 +102,7 @@ int main(int argc, char* args[])
 {
 	/*OLD*/
 	std::fstream fs;
-	fs.open("res/roms/MERLIN", std::fstream::in | std::fstream::binary);
+	fs.open("res/roms/PONG", std::fstream::in | std::fstream::binary);
 
 	fs.seekg(0, fs.end);
 	int len = fs.tellg();
@@ -115,13 +119,9 @@ int main(int argc, char* args[])
 
 	init_imgui();
 
-	screenSurface = SDL_GetWindowSurface(window);
-	unsigned char* pixels = (unsigned char*)screenSurface->pixels;
-	SDL_PixelFormat* fmt = screenSurface->format;
-
 	SDL_Event e;
 
-	char screenBuf[64 * 32];
+	unsigned char screenBuf[64 * 32 * 3];
 	for (int i = 0; i < 64 * 32; i++) {
 		screenBuf[i] = 0;
 	}
@@ -133,7 +133,17 @@ int main(int argc, char* args[])
 								 0, 0, 0, 0,
 								 0, 0, 0, 0 };
 
+
+	GLuint chip_8_window;
+	glGenTextures(1, &chip_8_window);
+	glBindTexture(GL_TEXTURE_2D, chip_8_window);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 64, 32, 0, GL_RGB, GL_UNSIGNED_BYTE, screenBuf);
+
 	while (!exit) {
+		glViewport(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
+		glClearColor(0, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
+
 		core.doCycle();
 
 		while (SDL_PollEvent(&e) != 0) {
@@ -205,10 +215,22 @@ int main(int argc, char* args[])
 		ImGui::NewFrame();
 		draw_imgui();
 
+		if (core.drawFlag) {
+			core.loadScreen(screenBuf);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+			glBindTexture(GL_TEXTURE_2D, chip_8_window);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 64, 32, GL_RGB, GL_UNSIGNED_BYTE, screenBuf);
+		}
+		
+		ImGui::Begin("Test");
+		ImGui::Image((void*)chip_8_window, ImVec2(256, 128));
+		ImGui::End();
+
 		ImGui::Render();
-		glViewport(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
-		glClearColor(0, 0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT);
+
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
 
@@ -234,7 +256,6 @@ int main(int argc, char* args[])
 		std::this_thread::sleep_for(std::chrono::nanoseconds(2500));
 	}
 
-	SDL_FreeSurface(screenSurface);
 	SDL_DestroyWindow(window);
 
 	delete[] romData;
