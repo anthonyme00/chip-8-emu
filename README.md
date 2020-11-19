@@ -4,6 +4,19 @@ You can get roms from [here](http://www.pong-story.com/chip8/).
 
 This project was created to learn about how computer works at a very basic level.
 
+### Controls:
+```
++-------+                 +-------+
+|1|2|3|4|                 |1|2|3|C|
++-------+                 +-------+
+|Q|W|E|R|                 |4|5|6|D|
++-------+ (Keyboard) =>   +-------+ (Chip-8 Keypad)
+|A|S|D|F|                 |7|8|9|E|
++-------+                 +-------+
+|Z|X|C|R|                 |A|0|B|F|
++-------+                 +-------+
+```
+
 ## Building
 Prerequisites:
 - Visual Studio 2019
