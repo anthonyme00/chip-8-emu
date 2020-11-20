@@ -4,6 +4,11 @@ You can get roms from [here](http://www.pong-story.com/chip8/).
 
 This project was created to learn about how computer works at a very basic level.
 
+Dependencies:
+ - [SDL2](https://www.libsdl.org/)
+ - [NFD](https://github.com/mlabbe/nativefiledialog)
+ - [Dear ImGui](https://github.com/ocornut/imgui)
+
 ### Controls:
 ```
 +-------+                 +-------+
@@ -16,6 +21,7 @@ This project was created to learn about how computer works at a very basic level
 |Z|X|C|R|                 |A|0|B|F|
 +-------+                 +-------+
 ```
+
 ## Building
 Prerequisites:
 - Visual Studio 2019

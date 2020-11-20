@@ -4,7 +4,6 @@
 #include <fstream>
 #include <thread>
 #include <chrono>
-#include <stdio.h>
 
 #include <SDL.h>
 
@@ -15,6 +14,8 @@
 #include <GL/gl3w.h>
 
 #include <nfd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define WINDOW_RES_X 640
 #define WINDOW_RES_Y 480
