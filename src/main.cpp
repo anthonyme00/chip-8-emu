@@ -51,7 +51,8 @@ bool init()
 	window = SDL_CreateWindow("Chip-8 Emu", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_RES_X, WINDOW_RES_Y, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE);
 	gl_context = SDL_GL_CreateContext(window);
 	SDL_GL_MakeCurrent(window, gl_context);
-	//Disable opengl because this makes emulation slow
+
+	//Disable vsync because this makes emulation slow
 	SDL_GL_SetSwapInterval(0);
 
 	if (gl3wInit() != 0)
@@ -103,17 +104,7 @@ void draw_imgui()
 			ImGui::EndMenu();
 		}		
 		ImGui::EndMainMenuBar();
-	}
-	/*
-	ImGui::Begin("A Window", 0, ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize);
-	ImGui::Text("Hello World");
-	ImGui::End();
-	ImGui::SetNextWindowPos(ImVec2(0, 100));
-	ImGui::Begin("A Window 2", 0, ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoCollapse);
-	ImGui::Text("Hello World 2");
-	ImGui::End();
-	*/
-	
+	}	
 }
 
 void cleanup()
@@ -130,21 +121,8 @@ void cleanup()
 
 int main(int argc, char* args[])
 {
-	/*
-	std::fstream fs;
-	fs.open("res/roms/INVADERS", std::fstream::in | std::fstream::binary);
-
-	fs.seekg(0, fs.end);
-	int len = fs.tellg();
-	fs.seekg(0, fs.beg);
-	
-	char* romData = new char[len];
-	fs.read(romData, len);
-	*/
-
 	core = Chip8();
 	core.initialize();
-	//core.loadProgram(romData, len);
 
 	init();
 
@@ -267,25 +245,6 @@ int main(int argc, char* args[])
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
-
-		/*
-		if (core.drawFlag) {
-			core.loadScreen(screenBuf);
-
-			SDL_LockSurface(screenSurface);
-			for (int x = 0; x < 512; x++) {
-				for (int y = 0; y < 256; y++) {
-					pixels[x * fmt->BytesPerPixel + y * screenSurface->pitch] = 255 * screenBuf[(y / 8) * 64 + (x / 8)];
-					pixels[x * fmt->BytesPerPixel + y * screenSurface->pitch + 1] = 255 * screenBuf[(y / 8) * 64 + (x / 8)];
-					pixels[x * fmt->BytesPerPixel + y * screenSurface->pitch + 2] = 255 * screenBuf[(y / 8) * 64 + (x / 8)];
-					pixels[x * fmt->BytesPerPixel + y * screenSurface->pitch + 3] = 255 * screenBuf[(y / 8) * 64 + (x / 8)];
-				}
-			}
-			SDL_UnlockSurface(screenSurface);
-
-			SDL_UpdateWindowSurface(window);
-		}
-		*/
 
 		std::this_thread::sleep_for(std::chrono::nanoseconds(2500));
 	}
