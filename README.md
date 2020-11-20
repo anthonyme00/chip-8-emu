@@ -2,6 +2,8 @@
 A simple chip-8 emulator.
 You can get roms from [here](http://www.pong-story.com/chip8/).
 
+![v0.1a](https://github.com/anthonyme00/github-markdown-resource/blob/main/chip-8-emu/chip-8-sdl-1.png "Release v0.1a")
+
 This project was created to learn about how computer works at a very basic level.
 
 Dependencies:
